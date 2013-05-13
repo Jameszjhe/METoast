@@ -1,9 +1,10 @@
 # METoast
 
 `METoast` is a view to show toast message. It's a queue based FIFO toast.
+
 ![METoast](http://i39.tinypic.com/5ueruo.png)
 
-## Useage ##
+## Usage ##
 
 Show a toast message
 ```Objective-c
