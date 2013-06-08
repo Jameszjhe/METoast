@@ -42,7 +42,7 @@
 {
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
     // Override point for customization after application launch.
-    self.viewController = [[[MEViewController alloc] initWithNibName:@"MYViewController" bundle:nil] autorelease];
+    self.viewController = [[[MEViewController alloc] init] autorelease];
     self.window.rootViewController = self.viewController;
     [self.window makeKeyAndVisible];
     

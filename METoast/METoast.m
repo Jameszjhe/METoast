@@ -232,6 +232,8 @@ static METoastAttribute *sharedAttribute = nil;
 
 - (void)layoutToastView;
 
+- (void)handleDeviceOrientationDidChangeNotification:(NSNotification *)aNotification;
+
 @end
 
 @implementation METoast
@@ -316,30 +318,77 @@ static METoastAttribute *sharedAttribute = nil;
 }
 
 - (void)layoutToastView {
+    UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
     CGRect toastWindowBounds = self.toastWindow.bounds;
     CGFloat w = CGRectGetWidth(toastWindowBounds);
     CGFloat h = CGRectGetHeight(toastWindowBounds);
     METoastLocation loc = [[METoast toastAttribute] location];
     CGPoint center = CGPointZero;
-    
     CGFloat coefficient = 0.168;
+    CGAffineTransform transform = CGAffineTransformIdentity;
     
-    switch (loc) {
-        case METoastLocationBottom:
-            center.x = floorf(w / 2.0);
-            center.y = floorf(h * (1 - coefficient));
+    switch (orientation) {
+        case UIInterfaceOrientationPortrait:
+            if (loc == METoastLocationBottom) {
+                center.x = floorf(w / 2.0);
+                center.y = floorf(h * (1 - coefficient));
+            } else if (loc == METoastLocationMiddle){
+                center.x = floorf(w / 2.0);
+                center.y = floorf(h / 2.0);
+            } else if (loc == METoastLocationTop) {
+                center.x = floorf(w / 2.0);
+                center.y = floorf(h * coefficient);
+            }
             break;
-        case METoastLocationMiddle:
-            center.x = floorf(w / 2.0);
-            center.y = floorf(h / 2.0);
+        case UIInterfaceOrientationPortraitUpsideDown:
+            transform =  CGAffineTransformMakeRotation(M_PI);
+            if (loc == METoastLocationBottom) {
+                center.x = floorf(w / 2.0);
+                center.y = floorf(h * coefficient);
+            } else if (loc == METoastLocationMiddle){
+                center.x = floorf(w / 2.0);
+                center.y = floorf(h / 2.0);
+            } else if (loc == METoastLocationTop) {
+                center.x = floorf(w / 2.0);
+                center.y = floorf(h * (1 - coefficient));
+            }
             break;
-        case METoastLocationTop:
-            center.x = floorf(w / 2.0);
-            center.y = floorf(h * coefficient);
+        case UIInterfaceOrientationLandscapeLeft:
+            transform =  CGAffineTransformMakeRotation(-M_PI_2);
+            if (loc == METoastLocationBottom) {
+                center.x = floorf(w * (1 - coefficient));
+                center.y = floorf(h / 2.0);
+            } else if (loc == METoastLocationMiddle){
+                center.x = floorf(w / 2.0);
+                center.y = floorf(h / 2.0);
+            } else if (loc == METoastLocationTop) {
+                center.x = floorf(w * coefficient);
+                center.y = floorf(h / 2.0);
+            }
+            break;
+        case UIInterfaceOrientationLandscapeRight:
+            transform =  CGAffineTransformMakeRotation(M_PI_2);
+            if (loc == METoastLocationBottom) {
+                center.x = floorf(w * coefficient);
+                center.y = floorf(h / 2.0);
+            } else if (loc == METoastLocationMiddle){
+                center.x = floorf(w / 2.0);
+                center.y = floorf(h / 2.0);
+            } else if (loc == METoastLocationTop) {
+                center.x = floorf(w * (1 - coefficient));
+                center.y = floorf(h / 2.0);
+            }
+            break;
+        default:
             break;
     }
     
     self.currentToastItem.view.center = center;
+    self.currentToastItem.view.transform = transform;
+}
+
+- (void)handleDeviceOrientationDidChangeNotification:(NSNotification *)aNotification {
+    [self layoutToastView];
 }
 
 - (id)init {
@@ -352,6 +401,11 @@ static METoastAttribute *sharedAttribute = nil;
         toastWindow_ = [[UIWindow alloc] initWithFrame:screenBounds];
         toastWindow_.windowLevel = UIWindowLevelAlert + 1;
         toastWindow_.backgroundColor = [UIColor clearColor];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(handleDeviceOrientationDidChangeNotification:)
+                                                     name:UIDeviceOrientationDidChangeNotification
+                                                   object:nil];
     }
     
     return self;
@@ -360,6 +414,7 @@ static METoastAttribute *sharedAttribute = nil;
 - (void)dealloc {
     [queue_ release];
     [toastWindow_ release];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     [super dealloc];
 }
 
