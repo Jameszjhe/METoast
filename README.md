@@ -2,7 +2,7 @@
 
 `METoast` is a view to show toast message. It's a queue based FIFO toast.
 
-![METoast](http://i39.tinypic.com/5ueruo.png)
+![METoast](https://github.com/Jameszjhe/METoast/blob/master/screenshot/screenshot0.png)
 
 ## Usage ##
 
